@@ -1,30 +1,38 @@
 def worst_fit(mem_avail, req_size, index):
-
-    # Si la lista está vacía
-    if not mem_avail:
+    if not mem_avail or req_size <= 0:
         return None
 
     n = len(mem_avail)
-    indice_asignado = -1
-    max_limite = -1
+    max_index = -1
+    max_limit = -1
 
-    # Buscar el segmento con el límite más grande que pueda contener la solicitud
+    # Búsqueda desde el índice dado hasta el final (circularidad)
     for i in range(index, n):
-        base, limite = mem_avail[i]
-        if limite >= req_size and limite > max_limite:
-            max_limite = limite
-            indice_asignado = i
+        base, limit = mem_avail[i]
+        if limit >= req_size and limit > max_limit:
+            max_limit = limit
+            max_index = i
 
-    # Si no se encuentra buscar desde el inicio
-    if indice_asignado == -1:
-        for i in range(index):
-            base, limite = mem_avail[i]
-            if limite >= req_size and limite > max_limite:
-                max_limite = limite
-                indice_asignado = i
-    # Si se encuentra un segmento válido, devolver la base y el índice
-    if indice_asignado != -1:
-        base_asignada = mem_avail[indice_asignado][0]
-        return base_asignada, indice_asignado
+    # Si no se encontró en el segmento inicial, buscar desde el principio hasta index
+    if max_index == -1:
+        for i in range(0, index):
+            base, limit = mem_avail[i]
+            if limit >= req_size and limit > max_limit:
+                max_limit = limit
+                max_index = i
+
+    if max_index == -1:
+        return None
+
+    # Asignar memoria
+    base, limit = mem_avail[max_index]
+    new_base = base
+    new_limit = req_size
+    remaining_limit = limit - req_size
+
+    # Actualizar lista de bloques
+    if remaining_limit > 0:
+        mem_avail[max_index] = (base + req_size, remaining_limit)
     else:
-        return None # No hay suficiente memoria para la asignación
+        del mem_avail[max_index]
+    return mem_avail, new_base, new_limit, max_index
